@@ -215,6 +215,7 @@ export function AgendaView() {
                           <CitaCard
                             key={cita.id}
                             cita={cita}
+                            pacientes={pacientes}
                             onEdit={() => {
                               setEditingCita(cita)
                               setEditDialogOpen(true)
@@ -257,11 +258,16 @@ export function AgendaView() {
 
 interface CitaCardProps {
   cita: Cita
+  pacientes: Paciente[]
   onEdit: () => void
   onDelete: () => void
 }
 
-function CitaCard({ cita, onEdit, onDelete }: CitaCardProps) {
+function CitaCard({ cita, pacientes, onEdit, onDelete }: CitaCardProps) {
+  const getPacienteNombre = () => {
+    const paciente = pacientes.find((p) => p.id === cita.pacienteId)
+    return paciente ? `${paciente.nombre} ${paciente.apellidos}` : "Paciente desconocido"
+  }
   const getModoLabel = (modo: number) => (modo === 0 ? "Presencial" : "Online")
   const getEstadoColor = (estado: number) => {
     const colors: Record<number, string> = {
@@ -287,7 +293,7 @@ function CitaCard({ cita, onEdit, onDelete }: CitaCardProps) {
   return (
     <div className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors group">
       <div className="flex-1">
-        <p className="font-semibold">{cita.pacienteNombre}</p>
+        <p className="font-semibold">{getPacienteNombre()}</p>
         <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
           <span>
             {startTime} - {endTime}

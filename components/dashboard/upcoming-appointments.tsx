@@ -10,15 +10,22 @@ import { useApi } from "@/lib/api/client"
 
 interface Appointment {
   id: string
-  pacienteNombre: string
+  pacienteId: string
   fechaInicio: string
   modo: number
   estado: number
 }
 
+interface Paciente {
+  id: string
+  nombre: string
+  apellidos: string
+}
+
 export function UpcomingAppointments() {
   const api = useApi()
   const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [pacientes, setPacientes] = useState<Paciente[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -30,11 +37,18 @@ export function UpcomingAppointments() {
     try {
       setLoading(true)
       setError(null)
-      const data = await api.get("/Cita")
+
+      // Load both citas and pacientes
+      const [citasData, pacientesData] = await Promise.all([
+        api.get("/Cita"),
+        api.get("/Pacientes"),
+      ])
+
+      setPacientes(Array.isArray(pacientesData) ? pacientesData : [])
 
       // Filter only programmed appointments from today onwards
       const now = new Date()
-      const filteredData = (Array.isArray(data) ? data : [])
+      const filteredData = (Array.isArray(citasData) ? citasData : [])
         .filter((apt: any) => {
           const aptDate = new Date(apt.fechaInicio)
           return aptDate >= now && apt.estado === 0
@@ -73,6 +87,11 @@ export function UpcomingAppointments() {
     return labels[estado] || "Desconocido"
   }
 
+  const getPacienteNombre = (pacienteId: string) => {
+    const paciente = pacientes.find((p) => p.id === pacienteId)
+    return paciente ? `${paciente.nombre} ${paciente.apellidos}` : "Paciente desconocido"
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -105,7 +124,7 @@ export function UpcomingAppointments() {
                 className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <div className="flex-1">
-                  <p className="font-medium">{apt.pacienteNombre}</p>
+                  <p className="font-medium">{getPacienteNombre(apt.pacienteId)}</p>
                   <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Calendar size={16} />

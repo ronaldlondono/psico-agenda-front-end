@@ -34,7 +34,6 @@ export interface PacienteActualizacion {
 export interface Cita {
   id: string
   pacienteId: string
-  pacienteNombre: string
   fechaInicio: string
   fechaFin: string
   modo: number // 0: Presencial, 1: Online
