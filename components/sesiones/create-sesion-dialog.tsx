@@ -2,15 +2,16 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useApi } from "@/lib/api/client"
-import type { SesionCreacion, Paciente } from "@/lib/types/api"
+import type { SesionCreacion, Paciente, Cita } from "@/lib/types/api"
 import { Upload, X } from "lucide-react"
+import { formatDateTime } from "@/lib/utils/date"
 
 interface CreateSesionDialogProps {
   open: boolean
@@ -27,6 +28,8 @@ interface Archivo {
 export function CreateSesionDialog({ open, onOpenChange, onSuccess, pacientes }: CreateSesionDialogProps) {
   const api = useApi()
   const [loading, setLoading] = useState(false)
+  const [citas, setCitas] = useState<Cita[]>([])
+  const [searchFilter, setSearchFilter] = useState("")
   const [archivos, setArchivos] = useState<Archivo[]>([])
   const [formData, setFormData] = useState({
     pacienteId: "",
@@ -36,6 +39,39 @@ export function CreateSesionDialog({ open, onOpenChange, onSuccess, pacientes }:
     analasis: "",
     planAccion: "",
   })
+
+  // Load citas when dialog opens
+  useEffect(() => {
+    if (open) {
+      loadCitas()
+    }
+  }, [open])
+
+  const loadCitas = async () => {
+    try {
+      const data = await api.get<Cita[]>("/Cita")
+      setCitas(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error("Error loading citas:", error)
+    }
+  }
+
+  const getFilteredCitas = () => {
+    if (!searchFilter.trim()) {
+      // Show all citas sorted by date (newest first)
+      return [...citas].sort((a, b) => new Date(b.fechaInicio).getTime() - new Date(a.fechaInicio).getTime())
+    }
+
+    const filter = searchFilter.toLowerCase()
+    return citas
+      .filter((cita) => {
+        const paciente = pacientes.find((p) => p.id === cita.pacienteId)
+        if (!paciente) return false
+        const nombreCompleto = `${paciente.nombre} ${paciente.apellidos}`.toLowerCase()
+        return nombreCompleto.includes(filter)
+      })
+      .sort((a, b) => new Date(b.fechaInicio).getTime() - new Date(a.fechaInicio).getTime())
+  }
 
   const handleAddArchivo = () => {
     const url = prompt("Ingresa la URL del archivo o ruta:")
@@ -52,8 +88,8 @@ export function CreateSesionDialog({ open, onOpenChange, onSuccess, pacientes }:
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.pacienteId) {
-      alert("Por favor selecciona un paciente")
+    if (!formData.citaId || !formData.pacienteId) {
+      alert("Por favor selecciona una cita")
       return
     }
 
@@ -100,35 +136,63 @@ export function CreateSesionDialog({ open, onOpenChange, onSuccess, pacientes }:
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Paciente Selection */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="paciente">Paciente *</Label>
+          {/* Cita Selection - Auto-selects Patient */}
+          <div>
+            <Label htmlFor="cita">Seleccionar Cita *</Label>
+            <div className="space-y-2">
+              <Input
+                placeholder="Buscar por paciente..."
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                className="text-sm"
+              />
               <select
-                id="paciente"
+                id="cita"
                 required
-                value={formData.pacienteId}
-                onChange={(e) => setFormData({ ...formData, pacienteId: e.target.value })}
+                value={formData.citaId}
+                onChange={(e) => {
+                  const citaId = e.target.value
+                  const selectedCita = citas.find((c) => c.id === citaId)
+
+                  setFormData({
+                    ...formData,
+                    citaId,
+                    pacienteId: selectedCita?.pacienteId || ""
+                  })
+                  setSearchFilter("")
+                }}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm"
+                size={6}
               >
-                <option value="">Selecciona un paciente</option>
-                {pacientes.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nombre} {p.apellidos}
-                  </option>
-                ))}
+                <option value="">Selecciona una cita</option>
+                {getFilteredCitas().map((cita) => {
+                  const paciente = pacientes.find((p) => p.id === cita.pacienteId)
+                  const pacienteNombre = paciente ? `${paciente.nombre} ${paciente.apellidos}` : "Desconocido"
+                  const fecha = formatDateTime(cita.fechaInicio)
+                  const estadoLabel = cita.estado === 0 ? "✓" : cita.estado === 1 ? "✓✓" : "✗"
+
+                  return (
+                    <option key={cita.id} value={cita.id}>
+                      {estadoLabel} {pacienteNombre} - {fecha}
+                    </option>
+                  )
+                })}
               </select>
             </div>
-            <div>
-              <Label htmlFor="cita">Cita Relacionada</Label>
-              <Input
-                id="cita"
-                placeholder="ID de cita (opcional)"
-                value={formData.citaId}
-                onChange={(e) => setFormData({ ...formData, citaId: e.target.value })}
-              />
-            </div>
           </div>
+
+          {/* Display selected patient (readonly) */}
+          {formData.pacienteId && (
+            <div>
+              <Label>Paciente</Label>
+              <div className="w-full px-3 py-2 border border-border rounded-md text-sm bg-muted">
+                {(() => {
+                  const paciente = pacientes.find((p) => p.id === formData.pacienteId)
+                  return paciente ? `${paciente.nombre} ${paciente.apellidos}` : "Desconocido"
+                })()}
+              </div>
+            </div>
+          )}
 
           {/* SOAP Sections */}
           <Tabs defaultValue="subjetivo" className="w-full">
