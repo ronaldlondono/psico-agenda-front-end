@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { LayoutDashboard, Users, Calendar, FileText, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils/utils"
+import Image from "next/image"
 
 interface SidebarProps {
   isOpen: boolean
@@ -25,17 +26,23 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       <aside
         className={cn(
           "bg-card border-r border-border transition-all duration-300 flex flex-col",
-          isOpen ? "w-64" : "w-20",
+          isOpen ? "w-72" : "w-20",
         )}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-border">
+        <div className="h-20 flex items-center justify-between px-4 border-b border-border">
           {isOpen && (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm">
-                PA
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                width={40}
+                height={40}
+              />
+              <div className="flex flex-col">
+                <span className="font-bold text-lg text-primary">PSICOAGENDA</span>
+                <span className="text-xs text-muted-foreground">Gestión Psicologica Integral</span>
               </div>
-              <span className="font-bold text-lg">PsicoAgenda</span>
             </div>
           )}
           <Button variant="ghost" size="icon" onClick={onToggle} className="h-8 w-8">
@@ -44,7 +51,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-2 py-4 space-y-2">
+        <nav className="flex-1 px-2 py-6 space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
@@ -52,7 +59,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               <Link key={item.href} href={item.href}>
                 <Button
                   variant={isActive ? "default" : "ghost"}
-                  className={cn("w-full justify-start gap-3 transition-all", !isOpen && "justify-center")}
+                  className={cn("w-full justify-start gap-5 transition-all mb-2", !isOpen && "justify-center")}
                 >
                   <Icon size={20} />
                   {isOpen && <span>{item.label}</span>}
@@ -63,8 +70,11 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border">
-          <div className="text-xs text-muted-foreground text-center">{isOpen ? "PsicoAgenda v1.0" : "v1.0"}</div>
+        <div className="p-6 border-t border-border">
+          <div className="flex items-center justify-center flex-col">
+            <div className="text-xs text-muted-foreground text-center">{isOpen ? "PsicoAgenda v1.0" : "v1.0"}</div>
+            <div className="text-xs text-muted-foreground text-center">{isOpen ? "@Rade Studio" : ""}</div>
+          </div>
         </div>
       </aside>
     </>

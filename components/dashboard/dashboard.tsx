@@ -86,10 +86,6 @@ export function Dashboard() {
           <h1 className="text-3xl font-bold tracking-tight">Bienvenido</h1>
           <p className="text-muted-foreground mt-1">Gestiona tu agenda y pacientes de manera eficiente</p>
         </div>
-        <Button size="lg" className="gap-2">
-          <Plus size={20} />
-          Nueva Cita
-        </Button>
       </div>
 
       {/* Stats Cards */}

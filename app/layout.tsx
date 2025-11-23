@@ -7,16 +7,17 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Psico Agenda',
+  title: 'PsicoAgenda',
   description: 'Agenda de psicología',
+  keywords: ['psicología', 'agenda', 'psicoagenda'],
   icons: {
     icon: [
       {
-        url: '/LogoSolo.png',
+        url: '/logo.png',
         media: '(prefers-color-scheme: light)',
       },
       {
-        url: '/LogoSolo.png',
+        url: '/logo.png',
         media: '(prefers-color-scheme: dark)',
       },
     ],
