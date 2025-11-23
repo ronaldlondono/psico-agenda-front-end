@@ -121,31 +121,36 @@ export function UpcomingAppointments() {
             {appointments.map((apt) => (
               <div
                 key={apt.id}
-                className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
               >
-                <div className="flex-1">
-                  <p className="font-medium">{getPacienteNombre(apt.pacienteId)}</p>
-                  <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Calendar size={16} />
-                      {formatDateTime(apt.fechaInicio)}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      {apt.modo === 0 ? (
-                        <>
-                          <MapPin size={16} />
-                          Presencial
-                        </>
-                      ) : (
-                        <>
-                          <Video size={16} />
-                          Online
-                        </>
-                      )}
-                    </span>
-                  </div>
+                {/* Calendar Icon */}
+                <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Calendar size={24} className="text-blue-600" />
                 </div>
-                <Badge className={getEstadoColor(apt.estado)}>{getEstadoLabel(apt.estado)}</Badge>
+
+                {/* Patient Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-base text-foreground">{getPacienteNombre(apt.pacienteId)}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {formatDateTime(apt.fechaInicio)}
+                  </p>
+                </div>
+
+                {/* Badges */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Badge
+                    variant={apt.modo === 0 ? "default" : "secondary"}
+                    className={apt.modo === 0 ? "bg-blue-600 hover:bg-blue-700 text-white" : ""}
+                  >
+                    {getModoLabel(apt.modo).toLowerCase()}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className="text-muted-foreground"
+                  >
+                    {getEstadoLabel(apt.estado).toLowerCase()}
+                  </Badge>
+                </div>
               </div>
             ))}
           </div>
