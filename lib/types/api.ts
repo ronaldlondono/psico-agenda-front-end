@@ -36,18 +36,29 @@ export interface Cita {
   pacienteId: string
   fechaInicio: string
   fechaFin: string
-  modo: number // 0: Presencial, 1: Online
-  estado: number // 0: Programada, 1: Atendida, 2: Cancelada
+  modo: CitaModo
+  estado: CitaEstado
   ubicacionLink: string | null
   notas: string | null
+}
+export enum CitaModo {
+  Presencial,
+  Online
+}
+export enum CitaEstado {
+  Pendiente,
+  Confirmada,
+  Cancelada,
+  Completada,
+  NoAsistio
 }
 
 export interface CitaCreacion {
   pacienteId: string
   fechaInicio: string
   fechaFin: string
-  modo: number
-  estado: number
+  modo: CitaModo
+  estado: CitaEstado
   ubicacionLink?: string | null
   notas?: string | null
 }
@@ -56,8 +67,8 @@ export interface CitaActualizacion {
   pacienteId?: string
   fechaInicio?: string
   fechaFin?: string
-  modo?: number
-  estado?: number
+  modo?: CitaModo
+  estado?: CitaEstado
   ubicacionLink?: string | null
   notas?: string | null
 }

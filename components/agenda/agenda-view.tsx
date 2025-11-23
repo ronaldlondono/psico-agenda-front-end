@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Plus, Filter, Edit, Trash2 } from "lucide-react"
+import { Plus, Filter, Edit, Trash2, Calendar } from "lucide-react"
 import { useApi } from "@/lib/api/client"
 import type { Cita, Paciente } from "@/lib/types/api"
+import { CitaModo, CitaEstado } from "@/lib/types/api"
 import { CreateCitaDialog } from "./create-cita-dialog"
 import { EditCitaDialog } from "./edit-cita-dialog"
 import { formatTime, parseDate, formatDateTime } from "@/lib/utils/date"
@@ -160,9 +162,11 @@ export function AgendaView() {
                 className="w-full px-3 py-2 border border-border rounded-md text-sm"
               >
                 <option value="todos">Todos</option>
-                <option value="0">Programada</option>
-                <option value="1">Atendida</option>
-                <option value="2">Cancelada</option>
+                <option value={CitaEstado.Pendiente}>Pendiente</option>
+                <option value={CitaEstado.Confirmada}>Confirmada</option>
+                <option value={CitaEstado.Cancelada}>Cancelada</option>
+                <option value={CitaEstado.Completada}>Completada</option>
+                <option value={CitaEstado.NoAsistio}>No asistió</option>
               </select>
             </div>
 
@@ -268,20 +272,21 @@ function CitaCard({ cita, pacientes, onEdit, onDelete }: CitaCardProps) {
     const paciente = pacientes.find((p) => p.id === cita.pacienteId)
     return paciente ? `${paciente.nombre} ${paciente.apellidos}` : "Paciente desconocido"
   }
-  const getModoLabel = (modo: number) => (modo === 0 ? "Presencial" : "Online")
-  const getEstadoColor = (estado: number) => {
-    const colors: Record<number, string> = {
-      0: "bg-blue-100 text-blue-800",
-      1: "bg-green-100 text-green-800",
-      2: "bg-red-100 text-red-800",
+  const getModoLabel = (modo: CitaModo) => {
+    const labels: Record<CitaModo, string> = {
+      [CitaModo.Presencial]: "Presencial",
+      [CitaModo.Online]: "Online",
     }
-    return colors[estado] || "bg-gray-100 text-gray-800"
+    return labels[modo] || "Desconocido"
   }
-  const getEstadoLabel = (estado: number) => {
-    const labels: Record<number, string> = {
-      0: "Programada",
-      1: "Atendida",
-      2: "Cancelada",
+
+  const getEstadoLabel = (estado: CitaEstado) => {
+    const labels: Record<CitaEstado, string> = {
+      [CitaEstado.Pendiente]: "Pendiente",
+      [CitaEstado.Confirmada]: "Confirmada",
+      [CitaEstado.Cancelada]: "Cancelada",
+      [CitaEstado.Completada]: "Completada",
+      [CitaEstado.NoAsistio]: "No asistió",
     }
     return labels[estado] || "Desconocido"
   }
@@ -291,28 +296,49 @@ function CitaCard({ cita, pacientes, onEdit, onDelete }: CitaCardProps) {
   console.log("Fecha inicial", startTime, "Fecha final", endTime)
 
   return (
-    <div className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors group">
-      <div className="flex-1">
-        <p className="font-semibold">{getPacienteNombre()}</p>
-        <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-          <span>
-            {startTime} - {endTime}
-          </span>
-          <span>•</span>
-          <span className="capitalize">{getModoLabel(cita.modo)}</span>
-        </div>
-        {cita.notas && <p className="text-sm mt-1 text-muted-foreground">{cita.notas}</p>}
+    <div className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors group">
+      {/* Calendar Icon */}
+      <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+        <Calendar size={24} className="text-blue-600" />
       </div>
-      <div className="flex items-center gap-3">
-        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getEstadoColor(cita.estado)}`}>
-          {getEstadoLabel(cita.estado)}
-        </span>
-        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="sm" onClick={onEdit} className="hover:bg-blue-100">
-            <Edit size={16} className="hover:text-blue-600" />
+
+      {/* Patient Info */}
+      <div className="flex-1 min-w-0">
+        <p className="font-semibold text-base text-foreground">{getPacienteNombre()}</p>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          {startTime} - {endTime}
+        </p>
+        {cita.notas && <p className="text-sm mt-1 text-muted-foreground line-clamp-1">{cita.notas}</p>}
+      </div>
+
+      {/* Badges and Actions */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <Badge
+          style={{
+            backgroundColor: `var(--badge-modo-${cita.modo}-bg)`,
+            color: `var(--badge-modo-${cita.modo}-text)`,
+            border: 'none'
+          }}
+        >
+          {getModoLabel(cita.modo).toLowerCase()}
+        </Badge>
+        <Badge
+          style={{
+            backgroundColor: `var(--badge-state-${cita.estado}-bg)`,
+            color: `var(--badge-state-${cita.estado}-text)`,
+            border: 'none'
+          }}
+        >
+          {getEstadoLabel(cita.estado).toLowerCase()}
+        </Badge>
+
+        {/* Action Buttons */}
+        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+          <Button variant="ghost" size="sm" onClick={onEdit} className="h-8 w-8 p-0 hover:bg-blue-100">
+            <Edit size={16} className="text-blue-600" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={onDelete} className="hover:bg-red-100">
-            <Trash2 size={16} className="text-destructive hover:text-red-600" />
+          <Button variant="ghost" size="sm" onClick={onDelete} className="h-8 w-8 p-0 hover:bg-red-100">
+            <Trash2 size={16} className="text-destructive" />
           </Button>
         </div>
       </div>

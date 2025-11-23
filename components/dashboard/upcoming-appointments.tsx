@@ -7,13 +7,14 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, MapPin, Video, AlertCircle } from "lucide-react"
 import { formatDateTime } from "@/lib/utils/date"
 import { useApi } from "@/lib/api/client"
+import { CitaModo, CitaEstado } from "@/lib/types/api"
 
 interface Appointment {
   id: string
   pacienteId: string
   fechaInicio: string
-  modo: number
-  estado: number
+  modo: CitaModo
+  estado: CitaEstado
 }
 
 interface Paciente {
@@ -51,7 +52,7 @@ export function UpcomingAppointments() {
       const filteredData = (Array.isArray(citasData) ? citasData : [])
         .filter((apt: any) => {
           const aptDate = new Date(apt.fechaInicio)
-          return aptDate >= now && apt.estado === 0
+          return aptDate >= now && (apt.estado === CitaEstado.Pendiente || apt.estado === CitaEstado.Confirmada)
         })
         .sort((a: any, b: any) => new Date(a.fechaInicio).getTime() - new Date(b.fechaInicio).getTime())
         .slice(0, 5)
@@ -65,24 +66,21 @@ export function UpcomingAppointments() {
     }
   }
 
-  const getModoLabel = (modo: number) => {
-    return modo === 0 ? "Presencial" : "Online"
-  }
-
-  const getEstadoColor = (estado: number) => {
-    const colors: Record<number, string> = {
-      0: "bg-blue-100 text-blue-800",
-      1: "bg-green-100 text-green-800",
-      2: "bg-red-100 text-red-800",
+  const getModoLabel = (modo: CitaModo) => {
+    const labels: Record<CitaModo, string> = {
+      [CitaModo.Presencial]: "Presencial",
+      [CitaModo.Online]: "Online",
     }
-    return colors[estado] || "bg-gray-100 text-gray-800"
+    return labels[modo] || "Desconocido"
   }
 
-  const getEstadoLabel = (estado: number) => {
-    const labels: Record<number, string> = {
-      0: "Programada",
-      1: "Atendida",
-      2: "Cancelada",
+  const getEstadoLabel = (estado: CitaEstado) => {
+    const labels: Record<CitaEstado, string> = {
+      [CitaEstado.Pendiente]: "Pendiente",
+      [CitaEstado.Confirmada]: "Confirmada",
+      [CitaEstado.Cancelada]: "Cancelada",
+      [CitaEstado.Completada]: "Completada",
+      [CitaEstado.NoAsistio]: "No asistió",
     }
     return labels[estado] || "Desconocido"
   }
@@ -139,14 +137,20 @@ export function UpcomingAppointments() {
                 {/* Badges */}
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <Badge
-                    variant={apt.modo === 0 ? "default" : "secondary"}
-                    className={apt.modo === 0 ? "bg-blue-600 hover:bg-blue-700 text-white" : ""}
+                    style={{
+                      backgroundColor: `var(--badge-modo-${apt.modo}-bg)`,
+                      color: `var(--badge-modo-${apt.modo}-text)`,
+                      border: 'none'
+                    }}
                   >
                     {getModoLabel(apt.modo).toLowerCase()}
                   </Badge>
                   <Badge
-                    variant="outline"
-                    className="text-muted-foreground"
+                    style={{
+                      backgroundColor: `var(--badge-state-${apt.estado}-bg)`,
+                      color: `var(--badge-state-${apt.estado}-text)`,
+                      border: 'none'
+                    }}
                   >
                     {getEstadoLabel(apt.estado).toLowerCase()}
                   </Badge>

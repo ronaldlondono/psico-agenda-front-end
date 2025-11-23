@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useApi } from "@/lib/api/client"
 import type { Cita, CitaActualizacion, Paciente } from "@/lib/types/api"
+import { CitaModo, CitaEstado } from "@/lib/types/api"
 
 interface EditCitaDialogProps {
   open: boolean
@@ -155,8 +156,8 @@ export function EditCitaDialog({ open, onOpenChange, cita, onSuccess, pacientes 
                 onChange={(e) => setFormData({ ...formData, modo: e.target.value })}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm"
               >
-                <option value="0">Presencial</option>
-                <option value="1">Online</option>
+                <option value={CitaModo.Presencial}>Presencial</option>
+                <option value={CitaModo.Online}>Online</option>
               </select>
             </div>
             <div>
@@ -168,9 +169,11 @@ export function EditCitaDialog({ open, onOpenChange, cita, onSuccess, pacientes 
                 onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
                 className="w-full px-3 py-2 border border-border rounded-md text-sm"
               >
-                <option value="0">Programada</option>
-                <option value="1">Atendida</option>
-                <option value="2">Cancelada</option>
+                <option value={CitaEstado.Pendiente}>Pendiente</option>
+                <option value={CitaEstado.Confirmada}>Confirmada</option>
+                <option value={CitaEstado.Cancelada}>Cancelada</option>
+                <option value={CitaEstado.Completada}>Completada</option>
+                <option value={CitaEstado.NoAsistio}>No asistió</option>
               </select>
             </div>
           </div>

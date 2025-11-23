@@ -37,6 +37,38 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.537 0.229 262.5);
+
+  /* Badge Estados - Fondos con transparencia */
+  --badge-state-0-bg: oklch(95% 0.10818 102.583 / 0.15);
+  /* Pendiente - Azul claro */
+  --badge-state-0-text: oklch(70.769% 0.15295 108.468);
+  /* Pendiente - Azul oscuro */
+  --badge-state-1-bg: oklch(85% 0.06 165.67 / 0.15);
+  /* Confirmada - Verde azulado claro */
+  --badge-state-1-text: oklch(40% 0.14 165.67);
+  /* Confirmada - Verde azulado oscuro */
+  --badge-state-2-bg: oklch(85% 0.08 29.23 / 0.15);
+  /* Cancelada - Rojo claro */
+  --badge-state-2-text: oklch(45% 0.20 29.23);
+  /* Cancelada - Rojo oscuro */
+  --badge-state-3-bg: oklch(85% 0.06 145 / 0.15);
+  /* Completada - Verde claro */
+  --badge-state-3-text: oklch(38% 0.16 145);
+  /* Completada - Verde oscuro */
+  --badge-state-4-bg: oklch(85% 0.08 57.38 / 0.15);
+  /* NoAsistio - Naranja claro */
+  --badge-state-4-text: oklch(45% 0.16 57.38);
+  /* NoAsistio - Naranja oscuro */
+
+  /* Badge Modos - Fondos con transparencia */
+  --badge-modo-0-bg: oklch(85% 0.08 254.72 / 0.15);
+  /* Presencial - Azul claro */
+  --badge-modo-0-text: oklch(42% 0.19 254.72);
+  /* Presencial - Azul oscuro */
+  --badge-modo-1-bg: oklch(85% 0.08 305.34 / 0.15);
+  /* Online - Púrpura claro */
+  --badge-modo-1-text: oklch(45% 0.20 305.34);
+  /* Online - Púrpura oscuro */
 }
 
 .dark {
@@ -72,6 +104,38 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.727 0.256 262.5);
+
+  /* Badge Estados - Fondos con transparencia (dark mode) */
+  --badge-state-0-bg: oklch(50% 0.12 236.62 / 0.2);
+  /* Pendiente - Azul */
+  --badge-state-0-text: oklch(75% 0.15 236.62);
+  /* Pendiente - Azul claro */
+  --badge-state-1-bg: oklch(50% 0.10 165.67 / 0.2);
+  /* Confirmada - Verde azulado */
+  --badge-state-1-text: oklch(72% 0.12 165.67);
+  /* Confirmada - Verde azulado claro */
+  --badge-state-2-bg: oklch(50% 0.12 29.23 / 0.2);
+  /* Cancelada - Rojo */
+  --badge-state-2-text: oklch(72% 0.18 29.23);
+  /* Cancelada - Rojo claro */
+  --badge-state-3-bg: oklch(50% 0.10 145 / 0.2);
+  /* Completada - Verde */
+  --badge-state-3-text: oklch(70% 0.14 145);
+  /* Completada - Verde claro */
+  --badge-state-4-bg: oklch(50% 0.10 57.38 / 0.2);
+  /* NoAsistio - Naranja */
+  --badge-state-4-text: oklch(72% 0.14 57.38);
+  /* NoAsistio - Naranja claro */
+
+  /* Badge Modos - Fondos con transparencia (dark mode) */
+  --badge-modo-0-bg: oklch(50% 0.12 254.72 / 0.2);
+  /* Presencial - Azul */
+  --badge-modo-0-text: oklch(73% 0.16 254.72);
+  /* Presencial - Azul claro */
+  --badge-modo-1-bg: oklch(50% 0.12 305.34 / 0.2);
+  /* Online - Púrpura */
+  --badge-modo-1-text: oklch(75% 0.17 305.34);
+  /* Online - Púrpura claro */
 }
 
 @theme inline {
@@ -113,6 +177,13 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-badge-state-0: var(--badge-state-0);
+  --color-badge-state-1: var(--badge-state-1);
+  --color-badge-state-2: var(--badge-state-2);
+  --color-badge-state-3: var(--badge-state-3);
+  --color-badge-state-4: var(--badge-state-4);
+  --color-badge-modo-0: var(--badge-modo-0);
+  --color-badge-modo-1: var(--badge-modo-1);
 }
 
 @layer base {
