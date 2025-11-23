@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, Filter } from "lucide-react"
+import { Plus, Filter, Edit, Trash2 } from "lucide-react"
 import { useApi } from "@/lib/api/client"
 import type { Cita, Paciente } from "@/lib/types/api"
 import { CreateCitaDialog } from "./create-cita-dialog"
@@ -308,11 +308,11 @@ function CitaCard({ cita, pacientes, onEdit, onDelete }: CitaCardProps) {
           {getEstadoLabel(cita.estado)}
         </span>
         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="sm" onClick={onEdit}>
-            Edit
+          <Button variant="ghost" size="sm" onClick={onEdit} className="hover:bg-blue-100">
+            <Edit size={16} className="hover:text-blue-600" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={onDelete}>
-            Cancel
+          <Button variant="ghost" size="sm" onClick={onDelete} className="hover:bg-red-100">
+            <Trash2 size={16} className="text-destructive hover:text-red-600" />
           </Button>
         </div>
       </div>

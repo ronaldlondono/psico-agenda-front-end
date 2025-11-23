@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus } from "lucide-react"
+import { Plus, Eye, Trash2 } from "lucide-react"
 import { useApi } from "@/lib/api/client"
 import type { Sesion, Paciente } from "@/lib/types/api"
 import { CreateSesionDialog } from "./create-sesion-dialog"
@@ -135,15 +135,16 @@ export function SesionesView() {
                     )}
                     <div className="flex gap-2 pt-2">
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation()
                           setViewingSesion(sesion)
                           setViewDialogOpen(true)
                         }}
+                        className="hover:bg-blue-100"
                       >
-                        Ver
+                        <Eye size={16} className="hover:text-blue-600" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -152,8 +153,9 @@ export function SesionesView() {
                           e.stopPropagation()
                           handleDelete(sesion.id)
                         }}
+                        className="hover:bg-red-100"
                       >
-                        Eliminar
+                        <Trash2 size={16} className="text-destructive hover:text-red-600" />
                       </Button>
                     </div>
                   </div>

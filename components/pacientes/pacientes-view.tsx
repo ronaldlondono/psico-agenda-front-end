@@ -159,7 +159,7 @@ export function PacientesView() {
                       {tags.length > 0 && (
                         <div className="flex gap-2 mt-2 flex-wrap">
                           {tags.map((tag: string, idx: number) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">
+                            <Badge key={idx} variant="secondary" className="bg-blue-100 text-blue-800">
                               {tag}
                             </Badge>
                           ))}
@@ -174,11 +174,12 @@ export function PacientesView() {
                           setEditingPaciente(paciente)
                           setEditDialogOpen(true)
                         }}
+                        className="hover:bg-blue-100"
                       >
-                        <Edit size={16} />
+                        <Edit size={16} className="hover:text-blue-600" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(paciente.id)}>
-                        <Trash2 size={16} className="text-destructive" />
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(paciente.id)} className="hover:bg-red-100">
+                        <Trash2 size={16} className="text-destructive hover:text-red-600" />
                       </Button>
                     </div>
                   </div>
