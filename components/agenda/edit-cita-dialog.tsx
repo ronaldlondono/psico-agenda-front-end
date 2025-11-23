@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useApi } from "@/lib/api/client"
+import { useToast } from "@/hooks/use-toast"
 import type { Cita, CitaActualizacion, Paciente } from "@/lib/types/api"
 import { CitaModo, CitaEstado } from "@/lib/types/api"
 
@@ -21,6 +22,7 @@ interface EditCitaDialogProps {
 
 export function EditCitaDialog({ open, onOpenChange, cita, onSuccess, pacientes }: EditCitaDialogProps) {
   const api = useApi()
+  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     pacienteId: "",
@@ -50,11 +52,54 @@ export function EditCitaDialog({ open, onOpenChange, cita, onSuccess, pacientes 
     })
   }, [cita])
 
+  const validateForm = (): string | null => {
+    if (!formData.pacienteId) {
+      return "Debe seleccionar un paciente"
+    }
+    if (!formData.fechaInicio) {
+      return "Debe seleccionar una fecha"
+    }
+    if (!formData.horaInicio || !formData.horaFin) {
+      return "Debe especificar hora de inicio y fin"
+    }
+
+    // Validar que la hora de fin sea posterior a la de inicio
+    const inicio = new Date(`${formData.fechaInicio}T${formData.horaInicio}`)
+    const fin = new Date(`${formData.fechaInicio}T${formData.horaFin}`)
+
+    if (fin <= inicio) {
+      return "La hora de fin debe ser posterior a la hora de inicio"
+    }
+
+    // Validar que la duración sea al menos 15 minutos
+    const duracionMinutos = (fin.getTime() - inicio.getTime()) / (1000 * 60)
+    if (duracionMinutos < 15) {
+      return "La cita debe durar al menos 15 minutos"
+    }
+
+    // Validar ubicación según el modo
+    const modo = Number.parseInt(formData.modo)
+    if (modo === CitaModo.Presencial && !formData.ubicacionLink?.trim()) {
+      return "La ubicación es obligatoria para citas presenciales"
+    }
+    if (modo === CitaModo.Online && !formData.ubicacionLink?.trim()) {
+      return "El link de videollamada es obligatorio para citas online"
+    }
+
+    return null
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.pacienteId || !formData.fechaInicio) {
-      alert("Por favor completa todos los campos requeridos")
+    // Validar formulario
+    const errorValidacion = validateForm()
+    if (errorValidacion) {
+      toast({
+        variant: "destructive",
+        title: "Error de validación",
+        description: errorValidacion,
+      })
       return
     }
 
@@ -76,11 +121,20 @@ export function EditCitaDialog({ open, onOpenChange, cita, onSuccess, pacientes 
 
       await api.put(`/Cita/${cita.id}`, updateData)
 
+      toast({
+        title: "Cita actualizada",
+        description: "La cita se ha actualizado exitosamente.",
+      })
+
       onOpenChange(false)
       onSuccess()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating cita:", error)
-      alert("Error al actualizar la cita")
+      toast({
+        variant: "destructive",
+        title: "Error al actualizar cita",
+        description: error?.message || "Ocurrió un error al actualizar la cita. Por favor, intenta de nuevo.",
+      })
     } finally {
       setLoading(false)
     }

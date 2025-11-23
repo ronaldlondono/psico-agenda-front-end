@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, Edit, Trash2, AlertCircle } from "lucide-react"
 import { useApi } from "@/lib/api/client"
+import { useToast } from "@/hooks/use-toast"
 import type { Paciente } from "@/lib/types/api"
 import { CreatePacienteDialog } from "./create-paciente-dialog"
 import { EditPacienteDialog } from "./edit-paciente-dialog"
@@ -14,6 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function PacientesView() {
   const api = useApi()
+  const { toast } = useToast()
   const [pacientes, setPacientes] = useState<Paciente[]>([])
   const [filteredPacientes, setFilteredPacientes] = useState<Paciente[]>([])
   const [searchTerm, setSearchTerm] = useState("")
@@ -48,12 +50,16 @@ export function PacientesView() {
       const data = await api.get<Paciente[]>("/Pacientes")
       console.log("Pacientes loaded:", data)
       setPacientes(Array.isArray(data) ? data : [])
-    } catch (error) {
+    } catch (error: any) {
       const errorMsg = error instanceof Error ? error.message : "Error desconocido"
       console.error("Error loading pacientes:", errorMsg)
-      setError(
-        `No se pudieron cargar los pacientes. Verifica que el servidor está corriendo en https://localhost:7224. Error: ${errorMsg}`,
-      )
+      const errorMessage = `No se pudieron cargar los pacientes. Verifica que el servidor está corriendo. Error: ${errorMsg}`
+      setError(errorMessage)
+      toast({
+        variant: "destructive",
+        title: "Error al cargar pacientes",
+        description: errorMessage,
+      })
       setPacientes([])
     } finally {
       setLoading(false)
@@ -66,9 +72,17 @@ export function PacientesView() {
     try {
       await api.delete(`/Pacientes/${id}`)
       setPacientes(pacientes.filter((p) => p.id !== id))
-    } catch (error) {
+      toast({
+        title: "Paciente eliminado",
+        description: "El paciente se ha eliminado exitosamente.",
+      })
+    } catch (error: any) {
       console.error("Error deleting paciente:", error)
-      setError("Error al eliminar el paciente")
+      toast({
+        variant: "destructive",
+        title: "Error al eliminar paciente",
+        description: error?.message || "No se pudo eliminar el paciente. Por favor, intenta de nuevo.",
+      })
     }
   }
 

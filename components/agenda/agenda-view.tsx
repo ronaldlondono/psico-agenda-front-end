@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Plus, Filter, Edit, Trash2, Calendar } from "lucide-react"
 import { useApi } from "@/lib/api/client"
+import { useToast } from "@/hooks/use-toast"
 import type { Cita, Paciente } from "@/lib/types/api"
 import { CitaModo, CitaEstado } from "@/lib/types/api"
 import { CreateCitaDialog } from "./create-cita-dialog"
@@ -15,6 +16,7 @@ import { formatTime, parseDate, formatDateTime } from "@/lib/utils/date"
 
 export function AgendaView() {
   const api = useApi()
+  const { toast } = useToast()
   const [citas, setCitas] = useState<Cita[]>([])
   const [pacientes, setPacientes] = useState<Paciente[]>([])
   const [loading, setLoading] = useState(true)
@@ -39,21 +41,35 @@ export function AgendaView() {
       ])
       setCitas(Array.isArray(citasData) ? citasData : [])
       setPacientes(Array.isArray(pacientesData) ? pacientesData : [])
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error loading agenda:", error)
+      toast({
+        variant: "destructive",
+        title: "Error al cargar datos",
+        description: "No se pudieron cargar las citas. Por favor, intenta de nuevo.",
+      })
     } finally {
       setLoading(false)
     }
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Estás seguro de que deseas cancelar esta cita?")) return
+    if (!confirm("¿Estás seguro de que deseas eliminar esta cita?")) return
 
     try {
       await api.delete(`/Cita/${id}`)
       setCitas(citas.filter((c) => c.id !== id))
-    } catch (error) {
+      toast({
+        title: "Cita eliminada",
+        description: "La cita se ha eliminado exitosamente.",
+      })
+    } catch (error: any) {
       console.error("Error deleting cita:", error)
+      toast({
+        variant: "destructive",
+        title: "Error al eliminar cita",
+        description: error?.message || "No se pudo eliminar la cita. Por favor, intenta de nuevo.",
+      })
     }
   }
 

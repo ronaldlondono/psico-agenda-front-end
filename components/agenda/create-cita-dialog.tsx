@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useApi } from "@/lib/api/client"
+import { useToast } from "@/hooks/use-toast"
 import type { CitaCreacion, Paciente } from "@/lib/types/api"
 import { CitaModo, CitaEstado } from "@/lib/types/api"
 
@@ -20,6 +21,7 @@ interface CreateCitaDialogProps {
 
 export function CreateCitaDialog({ open, onOpenChange, onSuccess, pacientes }: CreateCitaDialogProps) {
   const api = useApi()
+  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     pacienteId: "",
@@ -32,11 +34,60 @@ export function CreateCitaDialog({ open, onOpenChange, onSuccess, pacientes }: C
     notas: "",
   })
 
+  const validateForm = (): string | null => {
+    if (!formData.pacienteId) {
+      return "Debe seleccionar un paciente"
+    }
+    if (!formData.fechaInicio) {
+      return "Debe seleccionar una fecha"
+    }
+    if (!formData.horaInicio || !formData.horaFin) {
+      return "Debe especificar hora de inicio y fin"
+    }
+
+    // Validar que la hora de fin sea posterior a la de inicio
+    const inicio = new Date(`${formData.fechaInicio}T${formData.horaInicio}`)
+    const fin = new Date(`${formData.fechaInicio}T${formData.horaFin}`)
+
+    if (fin <= inicio) {
+      return "La hora de fin debe ser posterior a la hora de inicio"
+    }
+
+    // Validar que la duración sea al menos 15 minutos
+    const duracionMinutos = (fin.getTime() - inicio.getTime()) / (1000 * 60)
+    if (duracionMinutos < 15) {
+      return "La cita debe durar al menos 15 minutos"
+    }
+
+    // Validar que la cita no sea en el pasado
+    const ahora = new Date()
+    if (inicio < ahora) {
+      return "No se pueden crear citas en el pasado"
+    }
+
+    // Validar ubicación según el modo
+    const modo = Number.parseInt(formData.modo)
+    if (modo === 0 && !formData.ubicacionLink?.trim()) {
+      return "La ubicación es obligatoria para citas presenciales"
+    }
+    if (modo === 1 && !formData.ubicacionLink?.trim()) {
+      return "El link de videollamada es obligatorio para citas online"
+    }
+
+    return null
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.pacienteId || !formData.fechaInicio) {
-      alert("Por favor completa todos los campos requeridos")
+    // Validar formulario
+    const errorValidacion = validateForm()
+    if (errorValidacion) {
+      toast({
+        variant: "destructive",
+        title: "Error de validación",
+        description: errorValidacion,
+      })
       return
     }
 
@@ -58,6 +109,11 @@ export function CreateCitaDialog({ open, onOpenChange, onSuccess, pacientes }: C
 
       await api.post("/Cita", citaData)
 
+      toast({
+        title: "Cita creada",
+        description: "La cita se ha creado exitosamente.",
+      })
+
       setFormData({
         pacienteId: "",
         fechaInicio: "",
@@ -70,9 +126,13 @@ export function CreateCitaDialog({ open, onOpenChange, onSuccess, pacientes }: C
       })
       onOpenChange(false)
       onSuccess()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating cita:", error)
-      alert("Error al crear la cita")
+      toast({
+        variant: "destructive",
+        title: "Error al crear cita",
+        description: error?.message || "Ocurrió un error al crear la cita. Por favor, intenta de nuevo.",
+      })
     } finally {
       setLoading(false)
     }
