@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useApi } from "@/lib/api/client"
+import { useToast } from "@/hooks/use-toast"
 import type { PacienteCreacion } from "@/lib/types/api"
 import { X } from "lucide-react"
 
@@ -19,6 +20,7 @@ interface CreatePacienteDialogProps {
 
 export function CreatePacienteDialog({ open, onOpenChange, onSuccess }: CreatePacienteDialogProps) {
   const api = useApi()
+  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [tags, setTags] = useState<string[]>([])
   const [tagInput, setTagInput] = useState("")
@@ -31,8 +33,69 @@ export function CreatePacienteDialog({ open, onOpenChange, onSuccess }: CreatePa
     fechaNacimiento: "",
   })
 
+  const validateForm = (): string | null => {
+    if (!formData.nombre.trim()) {
+      return "El nombre es obligatorio"
+    }
+    if (!formData.apellidos.trim()) {
+      return "Los apellidos son obligatorios"
+    }
+
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!formData.email.trim()) {
+      return "El email es obligatorio"
+    }
+    if (!emailRegex.test(formData.email)) {
+      return "El formato del email no es válido"
+    }
+
+    // Validar teléfono
+    if (!formData.telefono.trim()) {
+      return "El teléfono es obligatorio"
+    }
+    if (formData.telefono.length < 9) {
+      return "El teléfono debe tener al menos 9 dígitos"
+    }
+
+    // Validar contacto de emergencia
+    if (!formData.contactoEmergencia.trim()) {
+      return "El contacto de emergencia es obligatorio"
+    }
+    if (formData.contactoEmergencia.length < 9) {
+      return "El contacto de emergencia debe tener al menos 9 dígitos"
+    }
+
+    // Validar fecha de nacimiento
+    if (formData.fechaNacimiento) {
+      const fechaNac = new Date(formData.fechaNacimiento)
+      const hoy = new Date()
+      const edad = hoy.getFullYear() - fechaNac.getFullYear()
+
+      if (fechaNac > hoy) {
+        return "La fecha de nacimiento no puede ser futura"
+      }
+      if (edad > 120) {
+        return "La fecha de nacimiento no es válida"
+      }
+    }
+
+    return null
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validar formulario
+    const errorValidacion = validateForm()
+    if (errorValidacion) {
+      toast({
+        variant: "destructive",
+        title: "Error de validación",
+        description: errorValidacion,
+      })
+      return
+    }
 
     try {
       setLoading(true)
@@ -45,6 +108,11 @@ export function CreatePacienteDialog({ open, onOpenChange, onSuccess }: CreatePa
       }
 
       await api.post("/Pacientes", pacienteData)
+
+      toast({
+        title: "Paciente creado",
+        description: "El paciente se ha creado exitosamente.",
+      })
 
       // Reset
       setFormData({
@@ -59,8 +127,13 @@ export function CreatePacienteDialog({ open, onOpenChange, onSuccess }: CreatePa
       setTagInput("")
       onOpenChange(false)
       onSuccess()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating paciente:", error)
+      toast({
+        variant: "destructive",
+        title: "Error al crear paciente",
+        description: error?.message || "Ocurrió un error al crear el paciente. Por favor, intenta de nuevo.",
+      })
     } finally {
       setLoading(false)
     }
