@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -25,6 +26,7 @@ interface Paciente {
 
 export function UpcomingAppointments() {
   const api = useApi()
+  const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [pacientes, setPacientes] = useState<Paciente[]>([])
   const [loading, setLoading] = useState(true)
@@ -97,7 +99,7 @@ export function UpcomingAppointments() {
           <CardTitle>Próximas Citas</CardTitle>
           <CardDescription>Citas programadas para hoy y próximos días</CardDescription>
         </div>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={() => router.push('/agenda')}>
           Ver todas
         </Button>
       </CardHeader>
